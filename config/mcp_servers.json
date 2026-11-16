@@ -1,0 +1,16 @@
+{
+  "_comment": "MCP 服务配置，格式同 langchain-mcp-adapters 的 MultiServerMCPClient。enabled=false 的服务会被跳过。",
+  "servers": {
+    "crm": {
+      "enabled": false,
+      "transport": "streamable_http",
+      "url": "http://localhost:9000/mcp"
+    },
+    "knowledge-base": {
+      "enabled": false,
+      "transport": "stdio",
+      "command": "python",
+      "args": ["-m", "your_kb_mcp_server"]
+    }
+  }
+}

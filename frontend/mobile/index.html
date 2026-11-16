@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1"
+    />
+    <meta name="theme-color" content="#0b3d2e" />
+    <title>移动投诉智能体 · 手机演示</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Sora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/m/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar-main">
+          <h1 id="topTitle">移动投诉智能体</h1>
+          <span class="status" id="healthText">连接中…</span>
+        </div>
+        <div class="topbar-actions" id="topActions">
+          <select id="filterSelect" class="filter" aria-label="筛选" hidden>
+            <option value="all">全部地市</option>
+            <option value="top">重投率 TOP</option>
+          </select>
+          <button type="button" class="icon-btn" id="refreshBtn" hidden>刷新</button>
+          <button type="button" class="icon-btn" id="newChatBtn" hidden>新会话</button>
+        </div>
+      </header>
+
+      <main class="stage">
+        <!-- 看板 -->
+        <section class="pane" id="pane-board" hidden>
+          <div class="kpi-grid">
+            <article class="kpi">
+              <span>今日受理</span>
+              <strong data-kpi="today">—</strong>
+            </article>
+            <article class="kpi">
+              <span>处理中</span>
+              <strong data-kpi="processing">—</strong>
+            </article>
+            <article class="kpi">
+              <span>紧急 / 升级</span>
+              <strong class="accent" data-kpi="urgent">—</strong>
+            </article>
+            <article class="kpi">
+              <span>已办结</span>
+              <strong data-kpi="closed">—</strong>
+            </article>
+          </div>
+
+          <article class="card">
+            <header class="card-head">
+              <h2>三节点重投</h2>
+              <span id="ctMeta">—</span>
+            </header>
+            <div class="ct-kpis" id="ctKpis">
+              <div><span>工单量</span><b data-ct="orders">—</b></div>
+              <div><span>重投量</span><b data-ct="repeat">—</b></div>
+              <div><span>重投率</span><b data-ct="rate">—</b></div>
+            </div>
+            <div class="map-box" id="ctMap"></div>
+            <p class="hint">手机上地图偏浏览；细查可切到「对话」提问。</p>
+            <div class="ask-row">
+              <button type="button" class="ask-chip" data-ask="帮我分析一下全省三级重投情况">问全省重投</button>
+              <button type="button" class="ask-chip" data-ask="哪个地市三级重投率最高">问最高地市</button>
+            </div>
+          </article>
+
+          <article class="card">
+            <header class="card-head">
+              <h2>最近工单</h2>
+            </header>
+            <ul class="ticket-list" id="ticketList"></ul>
+          </article>
+        </section>
+
+        <!-- 对话（默认） -->
+        <section class="pane pane-chat" id="pane-chat">
+          <div class="chips" id="chips">
+            <button type="button" data-prompt="生成周报">周报</button>
+            <button type="button" data-prompt="生成本月报">月报</button>
+            <button type="button" data-prompt="各地市投诉量分布怎么样">投诉分布</button>
+            <button type="button" data-prompt="重复投诉率口径是什么">口径查询</button>
+          </div>
+          <div class="messages" id="messages" role="log" aria-live="polite"></div>
+          <form class="composer" id="chatForm">
+            <textarea id="messageInput" rows="1" placeholder="描述诉求或分析问题…"></textarea>
+            <button type="submit" class="send" id="sendBtn">发送</button>
+          </form>
+        </section>
+
+        <!-- 我的 -->
+        <section class="pane" id="pane-mine" hidden>
+          <article class="card">
+            <header class="card-head"><h2>关于本页</h2></header>
+            <p class="mine-text">
+              手机效果演示页：底部 Tab 切换看板 / 对话 / 我的。数据与对话走同一套后端 API。
+            </p>
+            <ul class="mine-list">
+              <li>会话 ID：<code id="sessionId">—</code></li>
+              <li>桌面完整版：<a href="/">打开桌面界面</a></li>
+            </ul>
+          </article>
+          <article class="card">
+            <header class="card-head"><h2>能力说明</h2></header>
+            <ul class="mine-list" id="capList">
+              <li>加载中…</li>
+            </ul>
+          </article>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="主导航">
+        <button type="button" class="tab" data-tab="board">
+          <span class="tab-ico" aria-hidden="true">▣</span>
+          <span>看板</span>
+        </button>
+        <button type="button" class="tab is-active" data-tab="chat">
+          <span class="tab-ico" aria-hidden="true">◈</span>
+          <span>对话</span>
+        </button>
+        <button type="button" class="tab" data-tab="mine">
+          <span class="tab-ico" aria-hidden="true">◎</span>
+          <span>我的</span>
+        </button>
+      </nav>
+    </div>
+
+    <script src="/assets/vendor/echarts.min.js"></script>
+    <script src="/m/app.js"></script>
+  </body>
+</html>

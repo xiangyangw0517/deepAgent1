@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>投诉管控智能体平台</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Sora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link rel="stylesheet" href="/assets/styles.css?v=platform-board-4" />
+    <link rel="stylesheet" href="/assets/board.css?v=platform-board-4" />
+  </head>
+  <body class="platform-body">
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <section class="board-app" id="reworkView" aria-label="投诉管控重投看板">
+      <div class="wrap">
+        <header class="topbar">
+          <div class="brand">
+            <span class="logo">控</span>
+            <div>
+              <h1>投诉管控智能体平台</h1>
+              <div class="en">COMPLAINT MANAGEMENT INTELLIGENCE · HUNAN</div>
+            </div>
+          </div>
+          <div class="ctrl">
+            <select id="selYear" title="年份" aria-label="年份"></select>
+            <select id="selMonth" title="月份" aria-label="月份"></select>
+            <select id="selCity" title="地市" aria-label="地市"></select>
+            <button type="button" class="btn" id="btnRefresh">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
+              刷新
+            </button>
+            <div>
+              <button type="button" class="btn" id="btnExport">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+                导出
+              </button>
+              <div class="export-menu" id="exportMenu">
+                <button type="button" data-scope="month">📅 当前月明细（CSV）</button>
+                <button type="button" data-scope="year">🗓 当前年份（CSV）</button>
+                <div class="menu-sep"></div>
+                <button type="button" data-scope="custom">⏱ 自选派单时间…</button>
+              </div>
+            </div>
+            <span class="badge demo" id="liveBadge">连接中…</span>
+            <span class="badge" id="healthBadge" hidden>服务正常</span>
+          </div>
+        </header>
+
+        <section class="kpis">
+          <div class="kpi total">
+            <div class="lab">重投总量 <span class="tag" id="kSpan">-</span></div>
+            <div class="val"><span id="kTotal">-</span><small>单</small></div>
+            <div class="row"><span id="kTotalCmp" class="cmp flat">环比 -</span><span class="spark" id="kSpark"></span></div>
+          </div>
+          <div class="kpi">
+            <div class="lab">TOP1 原因 <span class="spark" id="sp1"></span></div>
+            <div class="val" id="k1v">-</div>
+            <div class="row"><span class="note" id="k1n">-</span><span id="k1c" class="cmp flat">-</span></div>
+          </div>
+          <div class="kpi">
+            <div class="lab">TOP2 原因 <span class="spark" id="sp2"></span></div>
+            <div class="val" id="k2v">-</div>
+            <div class="row"><span class="note" id="k2n">-</span><span id="k2c" class="cmp flat">-</span></div>
+          </div>
+          <div class="kpi">
+            <div class="lab">TOP3 原因 <span class="spark" id="sp3"></span></div>
+            <div class="val" id="k3v">-</div>
+            <div class="row"><span class="note" id="k3n">-</span><span id="k3c" class="cmp flat">-</span></div>
+          </div>
+        </section>
+
+        <section class="row2">
+          <div class="card">
+            <div class="card-h"><div class="t">原因构成</div><span class="tip" id="pieTip"></span></div>
+            <div class="chart" id="chartPie"></div>
+          </div>
+          <div class="card">
+            <div class="card-h">
+              <div class="t">湖南省地图分布</div>
+              <span class="tip">可缩放 · 按原因筛选</span>
+              <select id="selReason" title="原因分类" aria-label="重投原因"></select>
+              <div class="right" id="mapSeg">
+                <button type="button" class="seg on" data-mode="count">单量</button>
+                <button type="button" class="seg" data-mode="pct">占比</button>
+              </div>
+            </div>
+            <div class="chart" id="chartMap"></div>
+          </div>
+          <div class="side">
+            <div class="card insight">
+              <div class="card-h"><div class="t">🤖 小智洞察</div><span class="tip" id="insTip"></span></div>
+              <div class="slide" id="insSlide"></div>
+              <div class="dots" id="insDots"></div>
+            </div>
+            <div class="card ai">
+              <div class="card-h"><div class="t">🔮 AI 趋势预测</div><span class="tip">基于近 6 个月线性回归</span></div>
+              <div class="num"><b id="aiNum">-</b><span id="aiNote">预估下月重投量</span></div>
+              <div class="chart" id="chartAI"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card row3">
+          <div class="tabs">
+            <button type="button" class="tab on" data-tab="trend">📈 月度趋势与预测</button>
+            <button type="button" class="tab" data-tab="rank">📊 地市明细排名</button>
+          </div>
+          <div class="pane on" id="pane-trend"><div class="chart" id="chartTrend"></div></div>
+          <div class="pane" id="pane-rank" style="position:relative">
+            <button type="button" class="btn ghost" id="btnDetail" style="position:absolute;top:8px;right:12px;z-index:5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              地市明细
+            </button>
+            <div class="chart" id="chartRank"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="backdrop" id="detailBackdrop"></div>
+      <aside class="detail" id="detail">
+        <div class="detail-h">
+          <span class="logo" style="width:30px;height:30px;font-size:14px;border-radius:8px">控</span>
+          <div><b>地市明细</b><div class="meta" id="detailMeta">-</div></div>
+          <button type="button" class="x" id="detailClose">✕</button>
+        </div>
+        <div class="detail-body">
+          <table>
+            <thead id="detailHead"></thead>
+            <tbody id="detailBody"></tbody>
+          </table>
+        </div>
+      </aside>
+
+      <div class="backdrop" id="reportBackdrop"></div>
+      <aside class="report-drawer" id="reportDrawer">
+        <div class="detail-h">
+          <span class="logo" style="width:30px;height:30px;font-size:14px;border-radius:8px">报</span>
+          <div><b>月度重投报告</b><div class="meta" id="reportMeta">-</div></div>
+          <button type="button" class="btn" id="btnReportPdf">下载 PDF</button>
+          <button type="button" class="x" id="reportClose">✕</button>
+        </div>
+        <div class="report-body" id="reportBody">
+          <p style="padding:24px;color:#54708a">点击「生成月报」后在此展示。</p>
+        </div>
+      </aside>
+
+      <div class="export-modal" id="exportModal">
+        <div class="em-card">
+          <b>导出 · 自选派单时间</b>
+          <div class="em-row">
+            <label>开始</label><input type="date" id="expStart" />
+            <label>结束</label><input type="date" id="expEnd" />
+          </div>
+          <div class="em-tip">按库表「派单时间」过滤（含起止当天），导出三节点重投=是的<strong>全量字段</strong>明细 CSV。打开时默认填入当前看板年月，可按需改。</div>
+          <div class="em-actions">
+            <button type="button" class="em-cancel" id="expCancel">取消</button>
+            <button type="button" class="em-ok" id="expConfirm">导出 CSV</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="agent-dock" id="agentDock">
+      <section class="chat" id="chatPanel" hidden aria-label="AI 对话">
+        <header class="chat-head">
+          <div class="chat-drag">
+            <h2>投诉对话</h2>
+            <p>侧边抽屉 · 左缘可拖宽 · 会话 <code id="sessionId"></code></p>
+          </div>
+          <div class="chat-head-actions">
+            <button type="button" class="ghost-btn" id="newSessionBtn">新会话</button>
+            <button type="button" class="icon-btn" id="chatCloseBtn" aria-label="关闭对话">×</button>
+          </div>
+        </header>
+
+        <div class="chips" id="promptChips">
+          <button type="button" data-prompt="我是13800000000，这个月莫名其妙多扣了视频彩铃的钱">资费争议</button>
+          <button type="button" data-prompt="13800000000，我在朝阳区望京，信号很差上不了网">网络质量</button>
+          <button type="button" data-prompt="帮我查一下工单进度">查询工单</button>
+          <button type="button" data-prompt="生成周报">生成周报</button>
+          <button type="button" data-prompt="生成本月报">生成本月报</button>
+        </div>
+
+        <div class="messages" id="messages" role="log" aria-live="polite"></div>
+
+        <details class="run-panel" id="runPanel" hidden>
+          <summary class="run-summary">
+            <span class="run-pulse" id="runPulse" aria-hidden="true"></span>
+            <span class="run-title">运行过程</span>
+            <span class="run-phase" id="runPhase">待命</span>
+            <span class="run-timer" id="runTimer">0.0s</span>
+            <span class="run-chevron" aria-hidden="true"></span>
+          </summary>
+          <ol class="run-steps" id="runSteps"></ol>
+        </details>
+
+        <form class="composer" id="chatForm">
+          <textarea
+            id="messageInput"
+            rows="2"
+            placeholder="描述投诉诉求，可附带手机号、位置、月份…"
+          ></textarea>
+          <button type="button" class="send-btn" id="sendBtn" aria-label="发送或停止">发送</button>
+        </form>
+        <div class="chat-resize" id="chatResize" title="向左拖动加宽"></div>
+      </section>
+
+      <button
+        type="button"
+        class="agent-fab"
+        id="agentFab"
+        aria-expanded="false"
+        aria-controls="chatPanel"
+        aria-label="打开投诉对话"
+        title="点击打开对话，按住可拖动"
+      >
+        <svg class="fab-bot" viewBox="0 0 140 156" aria-hidden="true">
+          <defs>
+            <radialGradient id="fabClay" cx="32%" cy="26%" r="78%">
+              <stop offset="0" stop-color="#fffdf9" />
+              <stop offset="0.48" stop-color="#f4eee6" />
+              <stop offset="1" stop-color="#e4d5c4" />
+            </radialGradient>
+            <radialGradient id="fabGold" cx="34%" cy="30%" r="76%">
+              <stop offset="0" stop-color="#ffe7ad" />
+              <stop offset="0.5" stop-color="#e8b34a" />
+              <stop offset="1" stop-color="#c48a22" />
+            </radialGradient>
+            <linearGradient id="fabGlass" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#4a433c" />
+              <stop offset="0.22" stop-color="#2a2622" />
+              <stop offset="1" stop-color="#141210" />
+            </linearGradient>
+            <filter id="fabPixGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="1.1" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <g fill="url(#fabClay)">
+            <ellipse cx="58" cy="140" rx="9" ry="10" />
+            <ellipse cx="82" cy="140" rx="9" ry="10" />
+            <ellipse cx="70" cy="116" rx="29" ry="24" />
+            <ellipse cx="38" cy="112" rx="11" ry="14" transform="rotate(-16 38 112)" />
+            <ellipse cx="102" cy="112" rx="11" ry="14" transform="rotate(16 102 112)" />
+            <circle cx="70" cy="62" r="42" />
+            <ellipse cx="54" cy="46" rx="16" ry="9" fill="#fff" opacity="0.45" />
+          </g>
+          <ellipse cx="28" cy="64" rx="11" ry="14" fill="url(#fabGold)" />
+          <ellipse cx="24" cy="58" rx="4" ry="3" fill="#fff3d2" opacity="0.8" />
+          <ellipse cx="112" cy="64" rx="11" ry="14" fill="url(#fabGold)" />
+          <ellipse cx="108" cy="58" rx="4" ry="3" fill="#fff3d2" opacity="0.8" />
+          <rect x="40" y="46" width="60" height="36" rx="16" fill="url(#fabGlass)" />
+          <path d="M52 54h36" stroke="#f4eee6" stroke-width="2" stroke-linecap="round" opacity="0.28" />
+          <g class="fab-pixels" filter="url(#fabPixGlow)" fill="#e8b34a">
+            <rect x="52" y="56" width="3.1" height="3.1" rx="0.7" />
+            <rect x="55.4" y="56" width="3.1" height="3.1" rx="0.7" />
+            <rect x="52" y="59.4" width="3.1" height="3.1" rx="0.7" />
+            <rect x="55.4" y="59.4" width="3.1" height="3.1" rx="0.7" />
+            <rect x="81.5" y="56" width="3.1" height="3.1" rx="0.7" />
+            <rect x="84.9" y="56" width="3.1" height="3.1" rx="0.7" />
+            <rect x="81.5" y="59.4" width="3.1" height="3.1" rx="0.7" />
+            <rect x="84.9" y="59.4" width="3.1" height="3.1" rx="0.7" />
+            <rect x="58" y="68" width="3" height="3" rx="0.7" />
+            <rect x="61.4" y="70.6" width="3" height="3" rx="0.7" />
+            <rect x="64.8" y="72" width="3" height="3" rx="0.7" />
+            <rect x="68.2" y="72" width="3" height="3" rx="0.7" />
+            <rect x="71.6" y="70.6" width="3" height="3" rx="0.7" />
+            <rect x="75" y="68" width="3" height="3" rx="0.7" />
+          </g>
+        </svg>
+        <span class="fab-tip" id="agentFabTip">查数据、找根因，交给小智</span>
+      </button>
+    </div>
+
+    <!-- health hooks for app.js -->
+    <span id="healthDot" hidden></span>
+    <span id="healthText" hidden></span>
+    <button type="button" id="refreshBtn" hidden></button>
+
+    <script src="/assets/vendor/marked.min.js"></script>
+    <script src="/assets/vendor/purifier.min.js"></script>
+    <script src="/assets/vendor/echarts.min.js"></script>
+    <script src="/assets/hunan-map.js?v=platform-board-4"></script>
+    <script src="/assets/app.js?v=platform-board-4"></script>
+    <script src="/assets/rework.js?v=platform-board-4"></script>
+  </body>
+</html>

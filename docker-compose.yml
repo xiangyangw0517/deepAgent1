@@ -1,0 +1,38 @@
+# 纯离线部署（默认不访问外网）
+# 前置：
+#   1) 本地已有基础镜像 python:3.12-slim-bookworm（docker load）
+#   2) offline/wheels/ 已备齐 Linux amd64 依赖（./offline/setup.sh）
+# 启动：
+#   docker compose up -d --build
+#
+# 若需临时在线构建：OFFLINE=0 docker compose up -d --build
+
+services:
+  deepagent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # 构建阶段禁止访问外网（pip/apt/拉镜像都不走公网）
+      network: none
+      args:
+        OFFLINE: ${OFFLINE:-1}
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim-bookworm}
+        DOCKER_PLATFORM: ${DOCKER_PLATFORM:-linux/amd64}
+    image: complaint-agent-v2:local
+    container_name: complaint-agent-v2
+    # 禁止构建/启动时从仓库拉取镜像，只用本机已有镜像
+    pull_policy: never
+    ports:
+      - "${APP_PORT:-9001}:9001"
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Shanghai
+      # 离线环境勿开外网追踪（.env 里也可设 LANGSMITH_TRACING=false）
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+    volumes:
+      - ./skills:/app/skills:ro
+    restart: unless-stopped
+    extra_hosts:
+      # 仅用于访问宿主机内网服务（Dify / 发单 / 本机 Postgres），不是访问公网
+      - "host.docker.internal:host-gateway"
